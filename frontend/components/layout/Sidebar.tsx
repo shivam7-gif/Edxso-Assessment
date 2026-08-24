@@ -14,7 +14,6 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,26 +38,19 @@ export function Sidebar() {
         collapsed ? "w-14" : "w-56"
       )}
     >
-      {/* Workspace Header */}
+      {/* Workspace Header - Clean typography without logo box */}
       <div className="flex h-12 items-center justify-between px-3 border-b border-border">
         {!collapsed ? (
-          <Link href="/" className="flex items-center gap-2 overflow-hidden">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-slate-900 text-white font-bold text-xs">
-              C
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold tracking-tight text-slate-900 truncate">
-                CreatorFlow
-              </span>
-              <span className="text-[10px] text-slate-400 -mt-0.5 truncate">
-                Outreach CRM
-              </span>
-            </div>
+          <Link href="/" className="flex flex-col min-w-0 px-1">
+            <span className="text-xs font-bold tracking-tight text-slate-900 truncate">
+              CreatorFlow CRM
+            </span>
+            <span className="text-[10px] text-slate-400 -mt-0.5 truncate">
+              Influencer Outreach
+            </span>
           </Link>
         ) : (
-          <div className="mx-auto flex h-6 w-6 items-center justify-center rounded bg-slate-900 text-white font-bold text-xs">
-            C
-          </div>
+          <span className="mx-auto text-xs font-bold text-slate-900">CF</span>
         )}
 
         <button

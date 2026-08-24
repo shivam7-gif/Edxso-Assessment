@@ -148,11 +148,8 @@ def main():
     # Export
     subparsers.add_parser("export", help="Export processed data to CSV files in data/exports/")
 
-    # UI Dashboard
-    subparsers.add_parser("ui", help="Launch interactive Streamlit dashboard")
-
     # FastAPI REST Server
-    api_parser = subparsers.add_parser("api", help="Launch FastAPI REST backend server on port 8000")
+    api_parser = subparsers.add_parser("api", help="Launch FastAPI REST backend server for Next.js CRM on port 8000")
     api_parser.add_argument("--port", type=int, default=8000, help="Port to bind server (default: 8000)")
     api_parser.add_argument("--host", type=str, default="127.0.0.1", help="Host interface (default: 127.0.0.1)")
 
@@ -201,11 +198,8 @@ def main():
         elif args.command == "export":
             exports = orchestrator.export_csvs()
             console.print(f"[bold green]Exports created:[/bold green]\n{exports}")
-        elif args.command == "ui":
-            console.print("[bold cyan]Launching Streamlit Dashboard...[/bold cyan]")
-            subprocess.run([sys.executable, "-m", "streamlit", "run", "app/ui/dashboard.py"])
         elif args.command == "api":
-            console.print(f"[bold cyan]Launching CreatorFlow AI FastAPI Server on http://{args.host}:{args.port}...[/bold cyan]")
+            console.print(f"[bold cyan]Launching CreatorFlow AI FastAPI Backend on http://{args.host}:{args.port}...[/bold cyan]")
             import uvicorn
             uvicorn.run("app.api.server:app", host=args.host, port=args.port, reload=True)
     except Exception as e:

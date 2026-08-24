@@ -1,1 +1,1 @@
-"""Streamlit UI dashboard for EDXSO Micro-Influencer Outreach System."""
+"""Frontend package notice. Next.js in frontend/ is the primary UI."""
