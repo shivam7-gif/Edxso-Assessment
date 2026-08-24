@@ -1,1 +1,40 @@
-
+Outreach ID,Influencer,Email,Message Generated,Message ID,Sent,Date,Status,Send Mode,Error Message
+1,Splunk & Machine Learning,techiesid1985@gmail.com,NO,,YES,2026-08-24T18:48:17.814293,SIMULATED,simulation,
+2,Machine Learning,Not Found,NO,,NO,2026-08-24T18:48:17.840718,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+3,Learn With Jay,Not Found,NO,,NO,2026-08-24T18:48:17.845035,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+4,Fahad Hussain,fahadhussain1591@gmail.com,NO,,YES,2026-08-24T18:48:17.848225,SIMULATED,simulation,
+5,Intuitive Machine Learning,Not Found,NO,,NO,2026-08-24T18:48:17.853809,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+6,Onur Baltaci,Not Found,NO,,NO,2026-08-24T18:48:17.858808,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+7,Machine Learning Hub,Not Found,NO,,NO,2026-08-24T18:48:17.861970,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+8,Machine Learning With Hamza,Not Found,NO,,NO,2026-08-24T18:48:17.864997,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+9,Data Dissection,Not Found,NO,,NO,2026-08-24T18:48:17.868031,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+10,AI with Noor,Not Found,NO,,NO,2026-08-24T18:48:17.872227,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+11,Smitha Kolan - Machine Learning Engineer,Not Found,NO,,NO,2026-08-24T18:48:17.875792,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+12,Tübingen Machine Learning,Not Found,NO,,NO,2026-08-24T18:48:17.880433,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+13,Machine Learning & Simulation,Not Found,NO,,NO,2026-08-24T18:48:17.883904,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+14,Machine Learning Studio,Not Found,NO,,NO,2026-08-24T18:48:17.887768,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+15,Machine Learning with Phil,tutorials@www.neuralnet.ai,NO,,YES,2026-08-24T18:48:17.892115,SIMULATED,simulation,
+16,Alkademy Learning,support@alkademy.com,NO,,YES,2026-08-24T18:48:17.897596,SIMULATED,simulation,
+17,Digital Daru,digitaldaru@gmail.com,NO,,YES,2026-08-24T18:48:17.901328,SIMULATED,simulation,
+18,Code With Aarohi,aarohisingla1987@gmail.com,NO,,YES,2026-08-24T18:48:17.905631,SIMULATED,simulation,
+19,Machine Learning para humanos,Not Found,NO,,NO,2026-08-24T18:48:17.908898,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+20,Harry Connor AI,Not Found,NO,,NO,2026-08-24T18:48:17.912425,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+21,AI Sciences,Not Found,NO,,NO,2026-08-24T18:48:17.915540,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+22,Machine Learning and Data Science for Beginners,Not Found,NO,,NO,2026-08-24T18:48:17.919270,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+23,Decode AiML,decodeaibysanjeev@gmail.com,NO,,YES,2026-08-24T18:48:17.923229,SIMULATED,simulation,
+24,DVCorg,Not Found,NO,,NO,2026-08-24T18:48:17.927178,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+25,Machine Learning University,Not Found,NO,,NO,2026-08-24T18:48:17.930442,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+26,Python Dev & AI,Not Found,NO,,NO,2026-08-24T18:48:17.936407,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+27,DataTalksClub ⬛,Not Found,NO,,NO,2026-08-24T18:48:17.941801,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+28,Machine Learning at Berkeley,contact@ml.berkeley.edu,NO,,YES,2026-08-24T18:48:17.945158,SIMULATED,simulation,
+29,AIEngineering,Not Found,NO,,NO,2026-08-24T18:48:17.949278,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+30,MLconf,Not Found,NO,,NO,2026-08-24T18:48:17.953148,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+31,Understanding Machine Learning - Shai Ben-David (UWaterloo Winter 2015),Not Found,NO,,NO,2026-08-24T18:48:17.956619,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+32,Machine Learning TV,Not Found,NO,,NO,2026-08-24T18:48:17.959950,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+33,Parallel Computing and Scientific Machine Learning,Not Found,NO,,NO,2026-08-24T18:48:17.963246,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+34,The TWIML AI Podcast with Sam Charrington,Not Found,NO,,NO,2026-08-24T18:48:17.967147,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+35,"Rajistics - data science, AI, and machine learning",git@github.com,NO,,YES,2026-08-24T18:48:17.970698,SIMULATED,simulation,
+36,Umar Jamil,Not Found,NO,,NO,2026-08-24T18:48:17.974280,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+37,Volodymyr Kuleshov,Not Found,NO,,NO,2026-08-24T18:48:17.980516,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+38,Data Science & Machine Learning - MLMINDS,Not Found,NO,,NO,2026-08-24T18:48:17.984698,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.
+39,Machine Learning Dojo,Not Found,NO,,NO,2026-08-24T18:48:17.988771,SKIPPED_NO_EMAIL,manual_dm,No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.

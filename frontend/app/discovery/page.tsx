@@ -3,16 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Compass,
   Play,
   CheckCircle2,
   Clock,
-  Sparkles,
-  AlertCircle,
-  Users,
-  Search,
-  Sliders,
-  Check,
   ArrowRight,
   Trash2,
 } from "lucide-react";
@@ -47,7 +40,6 @@ function DiscoveryWorkspace() {
   const [jobState, setJobState] = useState<DiscoveryJobState | null>(null);
   const [isStarting, setIsStarting] = useState(false);
 
-  // Poll discovery status every 1.5 seconds if job is running
   useEffect(() => {
     let interval: any = null;
 
@@ -79,7 +71,6 @@ function DiscoveryWorkspace() {
         max_followers: maxFollowers,
         wipe_first: wipeFirst,
       });
-      // Poll immediately
       const state = await getDiscoveryStatus();
       setJobState(state);
     } catch (err) {
@@ -101,38 +92,35 @@ function DiscoveryWorkspace() {
   const isJobRunning = jobState?.status === "running" || jobState?.status === "starting";
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Creator Discovery Workspace</h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Discover real micro-influencers across ANY niche using YouTube Data API v3.
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Discovery Workspace</h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Discover real micro-influencers across any niche using YouTube Data API v3.
           </p>
         </div>
 
         <button
           onClick={handleClearDatabase}
-          className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/20 transition"
+          className="flex items-center gap-1.5 rounded border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50 transition shadow-xs"
         >
           <Trash2 className="h-3.5 w-3.5" />
-          <span>Wipe Database</span>
+          <span>Reset Database</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Discovery Configuration Panel (1 Col) */}
-        <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-border">
-            <Sliders className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold text-white">Discovery Configuration</h3>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left Column: Configuration Panel */}
+        <div className="rounded-lg border border-border bg-white p-4 space-y-3.5 shadow-xs">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 pb-2 border-b border-border">
+            Configuration
+          </h3>
 
-          {/* Niche Selection (Supports ANY Niche) */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-300">
-              Select or Enter Target Niche
-            </label>
+          {/* Niche Selection */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-slate-700">Target Niche Preset</label>
             <select
               value={niche}
               onChange={(e) => {
@@ -140,7 +128,7 @@ function DiscoveryWorkspace() {
                 setCustomKeyword("");
               }}
               disabled={isJobRunning}
-              className="h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-white focus:border-primary focus:outline-none"
+              className="h-8 w-full rounded border border-border bg-slate-50/50 px-2 text-xs font-medium text-slate-900 focus:bg-white focus:border-slate-400 focus:outline-none"
             >
               {NICHE_PRESETS.map((p) => (
                 <option key={p} value={p}>
@@ -150,41 +138,41 @@ function DiscoveryWorkspace() {
             </select>
 
             <div className="pt-1">
-              <span className="text-[11px] text-slate-400 block mb-1">Or Enter Custom Keyword / Free-form Niche:</span>
+              <span className="text-[11px] text-slate-400 block mb-1">Or custom keyword:</span>
               <input
                 type="text"
                 value={customKeyword}
                 onChange={(e) => setCustomKeyword(e.target.value)}
-                placeholder="e.g. Standup Comedy, Calisthenics, Next.js..."
+                placeholder="e.g. Python tutorial, Rust, AI..."
                 disabled={isJobRunning}
-                className="h-8 w-full rounded-md border border-border bg-background px-3 text-xs text-white placeholder-slate-500 focus:border-primary focus:outline-none"
+                className="h-8 w-full rounded border border-border bg-slate-50/50 px-2.5 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-400 focus:outline-none"
               />
             </div>
           </div>
 
-          {/* Follower Range (Micro-Influencer: 5k - 100k) */}
-          <div className="space-y-2">
+          {/* Subscriber Bounds */}
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-300">Subscriber Bounds</span>
-              <span className="text-primary font-mono font-medium">5,000 – 100,000</span>
+              <span className="font-medium text-slate-700">Subscriber Range</span>
+              <span className="font-mono text-slate-500">5,000 – 100,000</span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-md border border-border bg-background p-2">
-                <span className="text-[10px] text-slate-400 block">Min Subs</span>
-                <span className="font-mono text-white font-semibold">5,000</span>
+              <div className="rounded border border-border bg-slate-50/50 p-2">
+                <span className="text-[10px] text-slate-400 block">Min</span>
+                <span className="font-mono text-slate-800 font-semibold">5,000</span>
               </div>
-              <div className="rounded-md border border-border bg-background p-2">
-                <span className="text-[10px] text-slate-400 block">Max Subs</span>
-                <span className="font-mono text-white font-semibold">100,000</span>
+              <div className="rounded border border-border bg-slate-50/50 p-2">
+                <span className="text-[10px] text-slate-400 block">Max</span>
+                <span className="font-mono text-slate-800 font-semibold">100,000</span>
               </div>
             </div>
           </div>
 
-          {/* Discovery Candidate Target Count */}
-          <div className="space-y-1.5">
+          {/* Target Count */}
+          <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-300">Target Candidate Count</span>
-              <span className="font-mono font-bold text-white">{targetCount} Creators</span>
+              <span className="font-medium text-slate-700">Target Count</span>
+              <span className="font-mono font-semibold text-slate-900">{targetCount}</span>
             </div>
             <input
               type="range"
@@ -194,21 +182,21 @@ function DiscoveryWorkspace() {
               value={targetCount}
               onChange={(e) => setTargetCount(parseInt(e.target.value))}
               disabled={isJobRunning}
-              className="w-full accent-primary"
+              className="w-full accent-slate-900"
             />
           </div>
 
           {/* Options */}
-          <div className="pt-2 border-t border-border space-y-2 text-xs">
-            <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+          <div className="pt-2 border-t border-border space-y-1.5 text-xs">
+            <label className="flex items-center gap-2 text-slate-700 font-medium cursor-pointer">
               <input
                 type="checkbox"
                 checked={wipeFirst}
                 onChange={(e) => setWipeFirst(e.target.checked)}
                 disabled={isJobRunning}
-                className="rounded border-border bg-background text-primary"
+                className="rounded border-slate-300 text-slate-900"
               />
-              <span>Wipe previous records before running</span>
+              <span>Wipe previous records before run</span>
             </label>
           </div>
 
@@ -216,54 +204,53 @@ function DiscoveryWorkspace() {
           <button
             onClick={handleStartDiscovery}
             disabled={isJobRunning || isStarting}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-xs font-semibold text-white shadow-lg hover:bg-primary-hover disabled:opacity-50 transition"
+            className="w-full flex items-center justify-center gap-2 rounded bg-slate-900 py-2 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-50 transition shadow-xs"
           >
             {isJobRunning ? (
               <>
-                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 <span>Discovery Running...</span>
               </>
             ) : (
               <>
-                <Play className="h-3.5 w-3.5 fill-current" />
+                <Play className="h-3 w-3 fill-current" />
                 <span>Start YouTube Discovery</span>
               </>
             )}
           </button>
         </div>
 
-        {/* Right Column: Live Run Progress Experience (2 Cols) */}
-        <div className="lg:col-span-2 rounded-xl border border-border bg-surface p-5 flex flex-col justify-between space-y-5">
+        {/* Right Column: Live Run Progress */}
+        <div className="lg:col-span-2 rounded-lg border border-border bg-white p-4 flex flex-col justify-between space-y-4 shadow-xs">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold text-white">Live Discovery Execution</h3>
-              </div>
+            <div className="flex items-center justify-between pb-2 border-b border-border">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Execution Status
+              </h3>
               {jobState?.status && (
-                <span className="rounded-md border border-border bg-surface-raised px-2 py-0.5 text-[11px] font-mono font-bold uppercase text-slate-300">
-                  Status: {jobState.status}
+                <span className="text-[11px] font-mono font-semibold uppercase text-slate-600">
+                  {jobState.status}
                 </span>
               )}
             </div>
 
             {/* Current Step Banner & Progress Bar */}
-            <div className="my-4 rounded-xl border border-border bg-background p-4 space-y-3">
+            <div className="my-3 rounded border border-border bg-slate-50/50 p-3 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-white">{jobState?.current_step || "Ready to discover"}</span>
-                <span className="font-mono font-bold text-primary">{jobState?.progress || 0}%</span>
+                <span className="font-medium text-slate-900">{jobState?.current_step || "Ready"}</span>
+                <span className="font-mono font-semibold text-slate-900">{jobState?.progress || 0}%</span>
               </div>
 
-              <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
+              <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
+                  className="h-full bg-slate-900 transition-all duration-300"
                   style={{ width: `${jobState?.progress || 0}%` }}
                 />
               </div>
             </div>
 
             {/* Step-by-Step Checklist */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {jobState?.steps.map((step) => {
                 const isDone = step.status === "completed";
                 const isCurrent = step.status === "in_progress";
@@ -271,63 +258,63 @@ function DiscoveryWorkspace() {
                 return (
                   <div
                     key={step.id}
-                    className={`flex items-center gap-2.5 rounded-lg border p-2.5 text-xs transition ${
+                    className={`flex items-center gap-2 rounded border px-2.5 py-1.5 text-xs transition ${
                       isDone
-                        ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-300"
+                        ? "border-emerald-200 bg-emerald-50/40 text-emerald-800 font-medium"
                         : isCurrent
-                        ? "border-primary/40 bg-primary/5 text-white"
-                        : "border-border bg-background text-slate-400"
+                        ? "border-slate-400 bg-slate-50 text-slate-900 font-medium"
+                        : "border-border bg-white text-slate-400"
                     }`}
                   >
                     {isDone ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                     ) : isCurrent ? (
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent shrink-0" />
+                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-slate-900 border-t-transparent shrink-0" />
                     ) : (
-                      <Clock className="h-4 w-4 text-slate-600 shrink-0" />
+                      <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                     )}
-                    <span className="font-medium">{step.label}</span>
+                    <span className="truncate">{step.label}</span>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Real-time discovered preview table */}
+          {/* Sample Table */}
           {jobState?.discovered_creators && jobState.discovered_creators.length > 0 && (
-            <div className="pt-4 border-t border-border space-y-2">
+            <div className="pt-3 border-t border-border space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-300">
-                  Discovered Sample ({jobState.discovered_creators.length} Creators Streamed)
+                <span className="text-xs font-semibold text-slate-700">
+                  Streamed Sample ({jobState.discovered_creators.length})
                 </span>
                 <button
                   onClick={() => router.push("/influencers")}
-                  className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+                  className="text-xs font-medium text-slate-900 hover:underline flex items-center gap-1"
                 >
                   <span>Open in CRM Table</span>
                   <ArrowRight className="h-3 w-3" />
                 </button>
               </div>
 
-              <div className="rounded-lg border border-border bg-background overflow-hidden max-h-48 overflow-y-auto">
+              <div className="rounded border border-border overflow-hidden max-h-40 overflow-y-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-surface-raised text-[10px] uppercase font-bold text-slate-400 border-b border-border">
+                  <thead className="bg-slate-50 text-[10px] uppercase font-semibold text-slate-500 border-b border-border">
                     <tr>
-                      <th className="py-2 pl-3">Creator Name</th>
-                      <th className="py-2">Followers</th>
-                      <th className="py-2">Niche</th>
-                      <th className="py-2">Brand Fit</th>
-                      <th className="py-2 pr-3 text-right">Email</th>
+                      <th className="py-1.5 pl-2.5">Creator</th>
+                      <th className="py-1.5 text-right">Followers</th>
+                      <th className="py-1.5 pl-2.5">Niche</th>
+                      <th className="py-1.5 text-right">Fit Score</th>
+                      <th className="py-1.5 pr-2.5 text-right">Contact</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/50">
+                  <tbody className="divide-y divide-border">
                     {jobState.discovered_creators.map((c, i) => (
-                      <tr key={i} className="hover:bg-surface-raised transition">
-                        <td className="py-2 pl-3 font-medium text-white">{c.name}</td>
-                        <td className="py-2 font-mono text-slate-300">{formatNumber(c.subs)}</td>
-                        <td className="py-2 text-slate-400">{c.niche}</td>
-                        <td className="py-2 font-mono font-bold text-primary">{c.score}</td>
-                        <td className="py-2 pr-3 text-right font-mono text-[11px] text-cyan-400">
+                      <tr key={i} className="hover:bg-slate-50/50">
+                        <td className="py-1.5 pl-2.5 font-medium text-slate-900">{c.name}</td>
+                        <td className="py-1.5 text-right font-mono text-slate-700">{formatNumber(c.subs)}</td>
+                        <td className="py-1.5 pl-2.5 text-slate-600">{c.niche}</td>
+                        <td className="py-1.5 text-right font-mono font-semibold text-slate-900">{c.score}</td>
+                        <td className="py-1.5 pr-2.5 text-right font-mono text-[11px] text-slate-700">
                           {c.email}
                         </td>
                       </tr>

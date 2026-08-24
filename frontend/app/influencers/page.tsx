@@ -4,22 +4,16 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search,
-  Filter,
   Download,
   Play,
-  Check,
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  ExternalLink,
-  RefreshCw,
-  Mail,
-  SlidersHorizontal,
+  ArrowUpDown,
 } from "lucide-react";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { CreatorDrawer } from "@/components/influencers/CreatorDrawer";
-import { getInfluencers, InfluencersResponse } from "@/lib/api";
-import { Influencer } from "@/lib/types";
+import { getInfluencers, InfluencersResponse, generateBatchMessages } from "@/lib/api";
 import { formatNumber } from "@/lib/utils";
 
 function InfluencersCRMContent() {
@@ -39,6 +33,7 @@ function InfluencersCRMContent() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [isGeneratingAll, setIsGeneratingAll] = useState(false);
 
   const fetchInfluencers = async () => {
     setLoading(true);
@@ -85,42 +80,71 @@ function InfluencersCRMContent() {
     window.open("http://127.0.0.1:8000/api/exports/influencers.csv", "_blank");
   };
 
+  const handleGenerateAllPitches = async () => {
+    setIsGeneratingAll(true);
+    try {
+      const res = await generateBatchMessages(selectedNiche !== "all" ? selectedNiche : undefined);
+      alert(`AI Personalization Complete! ${res.message}`);
+      fetchInfluencers();
+    } catch (err: any) {
+      alert(`Error generating batch pitches: ${err.message || err}`);
+    } finally {
+      setIsGeneratingAll(false);
+    }
+  };
+
   return (
-    <div className="space-y-5 pb-12">
+    <div className="space-y-4 pb-12">
       {/* Header & Main Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Influencers CRM</h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Discover, evaluate, and manage verified micro-influencer relationships.
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Influencers</h1>
+            {data && (
+              <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+                {data.total}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Verified micro-influencer discovery, brand-fit evaluation, and outreach status.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleGenerateAllPitches}
+            disabled={isGeneratingAll}
+            className="flex items-center gap-1.5 rounded border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition shadow-xs"
+          >
+            <Sparkles className={`h-3.5 w-3.5 ${isGeneratingAll ? "animate-spin text-slate-900" : "text-slate-500"}`} />
+            <span>{isGeneratingAll ? "Generating..." : "Generate Pitches"}</span>
+          </button>
+
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-surface-raised hover:text-white transition"
+            className="flex items-center gap-1.5 rounded border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition shadow-xs"
           >
-            <Download className="h-3.5 w-3.5" />
+            <Download className="h-3.5 w-3.5 text-slate-500" />
             <span>Export CSV</span>
           </button>
 
           <button
             onClick={() => router.push("/discovery")}
-            className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-md hover:bg-primary-hover transition"
+            className="flex items-center gap-1.5 rounded bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800 transition shadow-xs"
           >
-            <Play className="h-3.5 w-3.5 fill-current" />
+            <Play className="h-3 w-3 fill-current" />
             <span>Run Discovery</span>
           </button>
         </div>
       </div>
 
       {/* Filter Toolbar */}
-      <div className="rounded-xl border border-border bg-surface p-3.5 space-y-3">
-        <div className="flex flex-col md:flex-row items-center gap-3">
+      <div className="rounded-lg border border-border bg-white p-3 space-y-2.5 shadow-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           {/* Search Box */}
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={search}
@@ -128,20 +152,20 @@ function InfluencersCRMContent() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search creators by name or niche keyword..."
-              className="h-8 w-full rounded-md border border-border bg-background pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:border-primary focus:outline-none transition"
+              placeholder="Search creator name or keyword..."
+              className="h-8 w-full rounded border border-border bg-slate-50/50 pl-8 pr-3 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:border-slate-400 focus:outline-none transition"
             />
           </div>
 
           {/* Niche Dropdown */}
-          <div className="w-full md:w-48">
+          <div className="w-40">
             <select
               value={selectedNiche}
               onChange={(e) => {
                 setSelectedNiche(e.target.value);
                 setPage(1);
               }}
-              className="h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-white focus:border-primary focus:outline-none"
+              className="h-8 w-full rounded border border-border bg-slate-50/50 px-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-slate-400 focus:outline-none"
             >
               <option value="all">All Niches</option>
               <option value="AI">AI & Machine Learning</option>
@@ -149,22 +173,21 @@ function InfluencersCRMContent() {
               <option value="Software Engineering">Software Engineering</option>
               <option value="DevOps">DevOps & Cloud</option>
               <option value="Cybersecurity">Cybersecurity</option>
-              <option value="Gadgets">Gadgets & Consumer Tech</option>
-              <option value="Comedy">Comedy & Entertainment</option>
-              <option value="Fitness">Fitness & Health</option>
-              <option value="Gaming">Gaming & Esports</option>
+              <option value="Gadgets">Gadgets & Tech</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Gaming">Gaming</option>
             </select>
           </div>
 
           {/* Status Dropdown */}
-          <div className="w-full md:w-36">
+          <div className="w-32">
             <select
               value={selectedStatus}
               onChange={(e) => {
                 setSelectedStatus(e.target.value);
                 setPage(1);
               }}
-              className="h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-white focus:border-primary focus:outline-none"
+              className="h-8 w-full rounded border border-border bg-slate-50/50 px-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-slate-400 focus:outline-none"
             >
               <option value="all">All Statuses</option>
               <option value="QUALIFIED">Qualified</option>
@@ -174,7 +197,7 @@ function InfluencersCRMContent() {
           </div>
 
           {/* Sort Column */}
-          <div className="w-full md:w-44">
+          <div className="w-40">
             <select
               value={`${sortBy}-${sortOrder}`}
               onChange={(e) => {
@@ -182,10 +205,10 @@ function InfluencersCRMContent() {
                 setSortBy(col);
                 setSortOrder(ord as "asc" | "desc");
               }}
-              className="h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-white focus:border-primary focus:outline-none"
+              className="h-8 w-full rounded border border-border bg-slate-50/50 px-2 text-xs font-medium text-slate-800 focus:bg-white focus:border-slate-400 focus:outline-none"
             >
-              <option value="brand_fit_score-desc">Brand Fit (Highest)</option>
-              <option value="brand_fit_score-asc">Brand Fit (Lowest)</option>
+              <option value="brand_fit_score-desc">Fit Score (High to Low)</option>
+              <option value="brand_fit_score-asc">Fit Score (Low to High)</option>
               <option value="followers-desc">Followers (High to Low)</option>
               <option value="followers-asc">Followers (Low to High)</option>
               <option value="engagement_rate-desc">Engagement (Highest)</option>
@@ -194,7 +217,7 @@ function InfluencersCRMContent() {
           </div>
 
           {/* Verified Email Only Toggle */}
-          <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer whitespace-nowrap px-1">
+          <label className="flex items-center gap-1.5 text-xs text-slate-600 font-medium cursor-pointer select-none px-1">
             <input
               type="checkbox"
               checked={emailOnly}
@@ -202,139 +225,142 @@ function InfluencersCRMContent() {
                 setEmailOnly(e.target.checked);
                 setPage(1);
               }}
-              className="rounded border-border bg-background text-primary focus:ring-0"
+              className="rounded border-slate-300 text-slate-900 focus:ring-0"
             />
-            <span>Verified Email Only</span>
+            <span>Public Email Only</span>
           </label>
         </div>
 
         {/* Action bar for selected rows */}
         {selectedRows.length > 0 && (
-          <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg px-3 py-1.5 text-xs">
-            <span className="font-medium text-white">
+          <div className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded px-3 py-1.5 text-xs">
+            <span className="font-semibold text-slate-900">
               {selectedRows.length} creators selected
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => router.push(`/messages?creators=${selectedRows.join(",")}`)}
-                className="flex items-center gap-1 font-semibold text-primary hover:underline"
+                className="font-semibold text-slate-900 hover:underline"
               >
-                <Sparkles className="h-3 w-3" />
-                <span>Generate Batch Pitches</span>
+                Generate Pitches →
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Main CRM Table */}
-      <div className="rounded-xl border border-border bg-surface overflow-hidden">
+      {/* Main CRM Table (Attio / Linear Data Grid style) */}
+      <div className="rounded-lg border border-border bg-white overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-border bg-surface-raised text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                <th className="py-3 pl-4 w-10">
+              <tr className="border-b border-border bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 sticky top-0 z-10">
+                <th className="py-2.5 pl-3 w-8">
                   <input
                     type="checkbox"
                     onChange={handleSelectAll}
                     checked={Boolean(data && data.items.length > 0 && selectedRows.length === data.items.length)}
-                    className="rounded border-border bg-background text-primary"
+                    className="rounded border-slate-300 text-slate-900"
                   />
                 </th>
-                <th className="py-3 px-2">Creator</th>
-                <th className="py-3 px-2">Platform</th>
-                <th className="py-3 px-2">Followers</th>
-                <th className="py-3 px-2">Engagement Proxy</th>
-                <th className="py-3 px-2">Niche</th>
-                <th className="py-3 px-2">Brand Fit</th>
-                <th className="py-3 px-2">Verified Contact</th>
-                <th className="py-3 pr-4 text-right">Status</th>
+                <th className="py-2.5 px-3">Creator</th>
+                <th className="py-2.5 px-3">Platform</th>
+                <th className="py-2.5 px-3 text-right">Subscribers</th>
+                <th className="py-2.5 px-3 text-right">Avg Views</th>
+                <th className="py-2.5 px-3 text-right">Engagement</th>
+                <th className="py-2.5 px-3">Niche</th>
+                <th className="py-2.5 px-3 text-right">Fit Score</th>
+                <th className="py-2.5 px-3">Public Contact</th>
+                <th className="py-2.5 pr-4 text-right">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/40">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center gap-2">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                      <span className="text-xs">Loading CRM table...</span>
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+                      <span className="text-xs">Loading records...</span>
                     </div>
                   </td>
                 </tr>
               ) : data && data.items.length > 0 ? (
-                data.items.map((creator) => (
-                  <tr
-                    key={creator.id}
-                    className="table-row-hover cursor-pointer transition"
-                  >
-                    <td className="py-3 pl-4" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selectedRows.includes(creator.id)}
-                        onChange={() => handleRowSelect(creator.id)}
-                        className="rounded border-border bg-background text-primary"
-                      />
-                    </td>
-
-                    <td
-                      className="py-3 px-2 font-medium text-white"
+                data.items.map((creator) => {
+                  const isSelected = selectedRows.includes(creator.id);
+                  return (
+                    <tr
+                      key={creator.id}
                       onClick={() => setSelectedCreatorId(creator.id)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected ? "bg-slate-100/70" : "hover:bg-slate-50/70"
+                      }`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 text-[10px] font-bold text-white border border-primary/30">
-                          {creator.name.substring(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                          <span className="font-semibold text-white hover:text-primary transition block">
-                            {creator.name}
-                          </span>
-                          <span className="text-[10px] text-slate-500 font-mono">
-                            {creator.channel_id.substring(0, 12)}...
-                          </span>
-                        </div>
-                      </div>
-                    </td>
+                      <td className="py-2.5 pl-3" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleRowSelect(creator.id)}
+                          className="rounded border-slate-300 text-slate-900"
+                        />
+                      </td>
 
-                    <td className="py-3 px-2 text-slate-400" onClick={() => setSelectedCreatorId(creator.id)}>
-                      <span className="inline-flex items-center gap-1 font-medium text-slate-300">
+                      <td className="py-2.5 px-3">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-200">
+                            {creator.name.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="font-medium text-slate-900 hover:underline truncate block">
+                              {creator.name}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono block">
+                              {creator.channel_id.substring(0, 10)}...
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-2.5 px-3 text-slate-600">
                         YouTube
-                      </span>
-                    </td>
+                      </td>
 
-                    <td className="py-3 px-2 font-mono text-slate-200" onClick={() => setSelectedCreatorId(creator.id)}>
-                      {formatNumber(creator.followers)}
-                    </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-slate-700">
+                        {formatNumber(creator.followers)}
+                      </td>
 
-                    <td className="py-3 px-2 font-mono font-medium text-emerald-400" onClick={() => setSelectedCreatorId(creator.id)}>
-                      {creator.engagement_rate !== null ? `${creator.engagement_rate}%` : <span className="text-slate-500 font-normal">N/A</span>}
-                    </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-slate-700">
+                        {formatNumber(creator.avg_views)}
+                      </td>
 
-                    <td className="py-3 px-2 text-slate-300" onClick={() => setSelectedCreatorId(creator.id)}>
-                      <span className="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300 border border-slate-700">
+                      <td className="py-2.5 px-3 text-right font-mono text-slate-700">
+                        {creator.engagement_rate !== null ? `${creator.engagement_rate}%` : "N/A"}
+                      </td>
+
+                      <td className="py-2.5 px-3 text-slate-700">
                         {creator.niche}
-                      </span>
-                    </td>
+                      </td>
 
-                    <td className="py-3 px-2 font-mono font-bold text-primary" onClick={() => setSelectedCreatorId(creator.id)}>
-                      {creator.brand_fit_score} / 100
-                    </td>
+                      <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
+                        {creator.brand_fit_score}
+                      </td>
 
-                    <td className="py-3 px-2 text-slate-300 font-mono text-[11px]" onClick={() => setSelectedCreatorId(creator.id)}>
-                      {creator.email !== "Not Found" ? (
-                        <span className="text-cyan-400 font-medium">{creator.email}</span>
-                      ) : (
-                        <span className="text-slate-500 italic">Not Found</span>
-                      )}
-                    </td>
+                      <td className="py-2.5 px-3 font-mono text-xs">
+                        {creator.email !== "Not Found" ? (
+                          <span className="text-slate-900 font-medium">{creator.email}</span>
+                        ) : (
+                          <span className="text-slate-400 italic">Not Found</span>
+                        )}
+                      </td>
 
-                    <td className="py-3 pr-4 text-right" onClick={() => setSelectedCreatorId(creator.id)}>
-                      <StatusBadge status={creator.status} />
-                    </td>
-                  </tr>
-                ))
+                      <td className="py-2.5 pr-4 text-right">
+                        <StatusBadge status={creator.status} />
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-500">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     No creators match the current filter criteria.
                   </td>
                 </tr>
@@ -345,23 +371,23 @@ function InfluencersCRMContent() {
 
         {/* Pagination Footer */}
         {data && (
-          <div className="flex items-center justify-between border-t border-border bg-surface-raised px-4 py-3 text-xs text-slate-400">
+          <div className="flex items-center justify-between border-t border-border bg-slate-50/50 px-4 py-2.5 text-xs text-slate-500">
             <span>
               Showing {data.items.length} of {data.total} creators (Page {data.page} of {data.total_pages})
             </span>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <button
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
-                className="flex h-7 w-7 items-center justify-center rounded border border-border text-slate-300 disabled:opacity-40 hover:bg-surface transition"
+                className="flex h-6 w-6 items-center justify-center rounded border border-border bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition shadow-xs"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </button>
               <button
                 disabled={page >= data.total_pages}
                 onClick={() => setPage(page + 1)}
-                className="flex h-7 w-7 items-center justify-center rounded border border-border text-slate-300 disabled:opacity-40 hover:bg-surface transition"
+                className="flex h-6 w-6 items-center justify-center rounded border border-border bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition shadow-xs"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
@@ -382,7 +408,7 @@ function InfluencersCRMContent() {
 
 export default function InfluencersCRMPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-xs text-slate-500">Loading Influencers CRM...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading Influencers...</div>}>
       <InfluencersCRMContent />
     </Suspense>
   );

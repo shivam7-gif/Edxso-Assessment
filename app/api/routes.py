@@ -35,6 +35,7 @@ active_job_state: Dict[str, Any] = {
         {"id": "classify", "label": "Classifying creators", "status": "pending"},
         {"id": "enrich", "label": "Enriching profiles & emails", "status": "pending"},
         {"id": "score", "label": "Calculating brand fit scores", "status": "pending"},
+        {"id": "personalize", "label": "Generating AI email pitches", "status": "pending"},
     ],
     "discovered_creators": [],
     "error": None,
@@ -604,9 +605,17 @@ def _run_discovery_job(niche: str, target_count: int, wipe_first: bool):
         active_job_state["steps"][4]["status"] = "completed"
         active_job_state["steps"][5]["status"] = "completed"
         active_job_state["steps"][6]["status"] = "completed"
+        active_job_state["steps"][7]["status"] = "in_progress"
+        active_job_state["current_step"] = "Generating AI personalized email pitches via Groq LLM..."
+        active_job_state["progress"] = 90
+
+        messages = orchestrator.personalize_qualified(target_niche=niche)
+        orchestrator.export_csvs()
+
+        active_job_state["steps"][7]["status"] = "completed"
         active_job_state["status"] = "completed"
         active_job_state["progress"] = 100
-        active_job_state["current_step"] = f"Successfully processed {len(saved)} creators!"
+        active_job_state["current_step"] = f"Successfully discovered {len(saved)} creators & generated {len(messages)} AI pitches!"
         active_job_state["completed_at"] = datetime.now(timezone.utc).isoformat()
         active_job_state["discovered_creators"] = [
             {"id": s.id, "name": s.name, "subs": s.followers, "niche": s.niche, "score": s.brand_fit_score, "email": s.email}
@@ -616,6 +625,15 @@ def _run_discovery_job(niche: str, target_count: int, wipe_first: bool):
         logger.exception(f"Discovery job error: {e}")
         active_job_state["status"] = "error"
         active_job_state["error"] = str(e)
+
+
+@router.post("/personalization/batch")
+def generate_batch_personalization(niche: Optional[str] = None):
+    """Generate AI personalization for all qualified creators."""
+    orchestrator = PipelineOrchestrator()
+    messages = orchestrator.personalize_qualified(target_niche=niche)
+    orchestrator.export_csvs()
+    return {"success": True, "count": len(messages), "message": f"Generated {len(messages)} AI pitches successfully."}
 
 
 @router.post("/discovery")

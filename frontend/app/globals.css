@@ -4,43 +4,48 @@
 
 @layer base {
   :root {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    --background: #F8FAFC;
+    --foreground: #0F172A;
   }
 
   body {
-    background-color: #090A0F;
-    color: #E2E8F0;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: #F8FAFC;
+    color: #0F172A;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "calt";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Custom subtle scrollbar */
+  /* Refined professional scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   ::-webkit-scrollbar-track {
-    background: #090A0F;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #283044;
-    border-radius: 4px;
+    background: #CBD5E1;
+    border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #3B4660;
+    background: #94A3B8;
   }
 }
 
-/* Custom Utilities for CRM Density */
-.glass-panel {
-  background-color: #12141C;
-  border: 1px solid #283044;
-  border-radius: 0.5rem;
+/* CRM Data Density & Professional Panel Utilities */
+.crm-panel {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
 }
 
-.table-row-hover {
-  transition: background-color 0.15s ease;
+.table-row-selected {
+  background-color: #F1F5F9;
 }
-.table-row-hover:hover {
-  background-color: rgba(255, 255, 255, 0.03);
+
+.table-cell-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

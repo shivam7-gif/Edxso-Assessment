@@ -218,9 +218,12 @@ class PipelineOrchestrator:
 
                 # Real-time accountability output
                 msg_status_style = "green" if validated_msg.validation_status == "VALID" else "yellow"
-                console.print(
-                    f"        [bold cyan]•[/bold cyan] [bold]{inf.name}[/bold] -> Pitch Generated ([bold]{validated_msg.email_word_count}w[/bold] Email, [bold]{validated_msg.dm_word_count}w[/bold] DM) [{msg_status_style}]{validated_msg.validation_status}[/{msg_status_style}]"
-                )
+                try:
+                    console.print(
+                        f"        [bold cyan]•[/bold cyan] [bold]{inf.name}[/bold] -> Pitch Generated ([bold]{validated_msg.email_word_count}w[/bold] Email, [bold]{validated_msg.dm_word_count}w[/bold] DM) [{msg_status_style}]{validated_msg.validation_status}[/{msg_status_style}]"
+                    )
+                except Exception:
+                    pass
 
                 if existing_msg:
                     existing_msg.email_subject = validated_msg.email_subject

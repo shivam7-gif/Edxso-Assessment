@@ -3,6 +3,19 @@
 import sys
 import argparse
 import subprocess
+
+# Ensure UTF-8 output encoding across Windows terminals
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from app.config.settings import get_settings
 from app.pipeline.orchestrator import PipelineOrchestrator
 from app.utils.logging import get_logger, console

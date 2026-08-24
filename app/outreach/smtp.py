@@ -64,16 +64,26 @@ class SMTPEmailDispatcher:
         missing_email_count = 0
 
         for inf in influencers:
-            if not inf.email or inf.email == "Not Found":
-                missing_email_count += 1
-                continue
-
             message = (
                 session.query(MessageModel)
                 .filter(MessageModel.influencer_id == inf.id)
                 .order_by(MessageModel.created_at.desc())
                 .first()
             )
+
+            if not inf.email or inf.email == "Not Found":
+                missing_email_count += 1
+                if not self.tracker.is_already_contacted(session, inf.id):
+                    self.tracker.record_outreach(
+                        session=session,
+                        influencer_id=inf.id,
+                        email="Not Found",
+                        message_id=message.id if message else None,
+                        status="SKIPPED_NO_EMAIL",
+                        send_mode="manual_dm",
+                        error_message="No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.",
+                    )
+                continue
             if not message or message.validation_status != "VALID":
                 logger.warning(f"Skipping creator '{inf.name}': valid message not available.")
                 continue

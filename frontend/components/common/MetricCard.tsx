@@ -23,50 +23,36 @@ export function MetricCard({
   onClick,
   className,
 }: MetricCardProps) {
-  const badgeStyles = {
-    success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-    warning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    info: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    neutral: "bg-slate-800 text-slate-400 border-slate-700",
-  };
-
   return (
     <div
       onClick={onClick}
       className={cn(
-        "relative flex flex-col justify-between rounded-xl border border-border bg-surface p-4 transition-all duration-200",
-        onClick && "cursor-pointer hover:border-primary/50 hover:bg-surface-raised",
+        "flex flex-col justify-between rounded-lg border border-border bg-white p-3.5 transition-colors",
+        onClick && "cursor-pointer hover:border-slate-300 hover:bg-slate-50/50",
         className
       )}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+      <div className="flex items-center justify-between gap-1.5">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
           {title}
         </span>
-        {Icon && (
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-raised text-slate-300 border border-border">
-            <Icon className="h-3.5 w-3.5" />
-          </div>
-        )}
+        {Icon && <Icon className="h-3.5 w-3.5 text-slate-400" />}
       </div>
 
-      <div className="my-2">
-        <div className="text-2xl font-bold tracking-tight text-white">{value}</div>
+      <div className="my-1.5">
+        <div className="text-xl font-semibold tracking-tight text-slate-900">{value}</div>
       </div>
 
-      <div className="flex items-center justify-between text-xs">
-        {subtext && <span className="text-slate-400 text-[11px]">{subtext}</span>}
-        {badge && (
-          <span
-            className={cn(
-              "ml-auto inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold border",
-              badgeStyles[badgeType]
-            )}
-          >
-            {badge}
-          </span>
-        )}
-      </div>
+      {(subtext || badge) && (
+        <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+          {subtext && <span className="truncate">{subtext}</span>}
+          {badge && (
+            <span className="shrink-0 text-[10px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
+              {badge}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

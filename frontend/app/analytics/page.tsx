@@ -2,16 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  BarChart3,
-  TrendingUp,
-  PieChart,
-  Users,
-  CheckCircle2,
-  Mail,
-  Sparkles,
-  Send,
   RefreshCw,
-  Globe,
+  Mail,
 } from "lucide-react";
 import { MetricCard } from "@/components/common/MetricCard";
 import { getAnalytics } from "@/lib/api";
@@ -48,27 +40,27 @@ export default function AnalyticsPage() {
   const maxEmailSrcVal = Math.max(...Object.values(emailSources), 1);
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Outreach & Pipeline Analytics</h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Deep-dive metrics across qualification rates, public email sources, niche distributions, and proxy engagement.
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Pipeline Analytics</h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Conversion metrics, qualification rates, and email attribution breakdown.
           </p>
         </div>
 
         <button
           onClick={fetchAnalytics}
-          className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-surface-raised hover:text-white transition"
+          className="flex items-center gap-1.5 rounded border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition shadow-xs"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-3.5 w-3.5 text-slate-500 ${loading ? "animate-spin" : ""}`} />
           <span>Refresh Analytics</span>
         </button>
       </div>
 
       {/* Top Metric Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
         <MetricCard
           title="Qualification Rate"
           value={kpis ? `${kpis.qualification_rate}%` : "..."}
@@ -80,7 +72,7 @@ export default function AnalyticsPage() {
         <MetricCard
           title="Public Email Coverage"
           value={kpis ? `${kpis.email_coverage_rate ?? kpis.emails_rate}%` : "..."}
-          subtext={`${kpis?.emails_found_count || 0} public emails found`}
+          subtext={`${kpis?.emails_found_count || 0} public emails`}
           badge="Zero Guessing"
           badgeType="info"
         />
@@ -88,13 +80,13 @@ export default function AnalyticsPage() {
         <MetricCard
           title="Pitch Validation Rate"
           value={kpis ? `${kpis.messages_validated_rate}%` : "..."}
-          subtext="Strict 60-90w constraint"
-          badge="Groq Llama-3.3"
+          subtext="60–90w word limit"
+          badge="Groq LLM"
           badgeType="success"
         />
 
         <MetricCard
-          title="Avg Public Engagement Proxy"
+          title="Avg Engagement Proxy"
           value={kpis ? `${kpis.avg_engagement_proxy}%` : "..."}
           subtext="Public (Likes+Comments)/Subs"
           badge="Public Proxy"
@@ -102,40 +94,42 @@ export default function AnalyticsPage() {
         />
       </div>
 
-      <div className="rounded-lg bg-surface/50 border border-border/60 px-4 py-2.5 text-xs text-slate-400">
-        ℹ️ <strong>Avg Public Engagement Proxy:</strong> Calculated from publicly available recent-video likes and comments relative to subscriber count. This is a public proxy and not private YouTube Analytics data.
+      <div className="rounded border border-border bg-slate-50 px-3 py-2 text-xs text-slate-600">
+        <strong>Engagement Proxy Note:</strong> Calculated strictly from public video metrics (likes and comments relative to subscribers).
       </div>
 
       {/* Conversion Funnel */}
-      <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
+      <div className="rounded-lg border border-border bg-white p-4 space-y-3 shadow-xs">
         <div className="flex items-center justify-between pb-2 border-b border-border">
-          <h3 className="text-sm font-semibold text-white">Full Outreach Conversion Funnel</h3>
-          <span className="text-xs text-slate-400">Total Discovered: {funnel?.discovered || 0}</span>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Outreach Conversion Funnel
+          </h3>
+          <span className="text-xs font-mono text-slate-400">Total: {funnel?.discovered || 0}</span>
         </div>
 
-        <div className="space-y-3 pt-2">
+        <div className="space-y-2.5 pt-1">
           {[
-            { label: "1. Discovered (YouTube Raw Pool)", count: funnel?.discovered || 0, color: "bg-slate-600" },
-            { label: "2. Qualified (Brand-Fit Score ≥ 70)", count: funnel?.qualified || 0, color: "bg-primary" },
-            { label: "3. Enriched (Public Emails Found)", count: funnel?.enriched || 0, color: "bg-cyan-500" },
-            { label: "4. Personalized (Groq Pitches Generated)", count: funnel?.personalized || 0, color: "bg-accent" },
-            { label: "5. Ready for Outreach (Approved & Valid)", count: funnel?.ready_for_outreach || 0, color: "bg-emerald-500" },
-            { label: "6. Outreach Dispatched (Sent / Simulated)", count: funnel?.sent || 0, color: "bg-emerald-400" },
+            { label: "1. Discovered (YouTube Raw Pool)", count: funnel?.discovered || 0, color: "bg-slate-400" },
+            { label: "2. Qualified (Brand-Fit Score ≥ 70)", count: funnel?.qualified || 0, color: "bg-slate-700" },
+            { label: "3. Enriched (Public Emails Found)", count: funnel?.enriched || 0, color: "bg-slate-800" },
+            { label: "4. Personalized (Groq Pitches Generated)", count: funnel?.personalized || 0, color: "bg-slate-900" },
+            { label: "5. Ready for Outreach (Approved & Valid)", count: funnel?.ready_for_outreach || 0, color: "bg-emerald-600" },
+            { label: "6. Outreach Dispatched (Sent / Simulated)", count: funnel?.sent || 0, color: "bg-emerald-500" },
           ].map((stage, idx) => {
             const pct = funnel?.discovered ? Math.round((stage.count / (funnel.discovered || 1)) * 100) : 0;
             return (
               <div key={idx} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-300">{stage.label}</span>
+                  <span className="font-medium text-slate-700">{stage.label}</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-white">{stage.count}</span>
+                    <span className="font-mono font-semibold text-slate-900">{stage.count}</span>
                     <span className="text-[11px] text-slate-400 font-mono">({pct}%)</span>
                   </div>
                 </div>
 
-                <div className="h-2.5 w-full rounded-full bg-background overflow-hidden">
+                <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className={`h-full ${stage.color} transition-all duration-500`}
+                    className={`h-full ${stage.color} rounded-full transition-all duration-300`}
                     style={{ width: `${Math.max(2, pct)}%` }}
                   />
                 </div>
@@ -146,26 +140,26 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Grid: Email Sources, Niches & Follower Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Public Email Sources Breakdown */}
-        <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
-          <h3 className="text-sm font-semibold text-white pb-2 border-b border-border flex items-center gap-2">
-            <Mail className="h-4 w-4 text-cyan-400" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Public Email Sources */}
+        <div className="rounded-lg border border-border bg-white p-4 space-y-3 shadow-xs">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 pb-2 border-b border-border flex items-center gap-1.5">
+            <Mail className="h-3.5 w-3.5 text-slate-500" />
             <span>Public Email Sources</span>
           </h3>
 
-          <div className="space-y-3 pt-1">
+          <div className="space-y-2 pt-1">
             {Object.entries(emailSources).map(([sourceName, count]) => {
               const pct = Math.round((count / maxEmailSrcVal) * 100);
               return (
-                <div key={sourceName} className="space-y-1">
+                <div key={sourceName} className="space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-slate-300">{sourceName}</span>
-                    <span className="font-mono font-bold text-white">{count}</span>
+                    <span className="text-slate-600">{sourceName}</span>
+                    <span className="font-mono font-semibold text-slate-900">{count}</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-background overflow-hidden">
+                  <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className="h-full bg-cyan-500"
+                      className="h-full bg-slate-800 rounded-full"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -174,60 +168,56 @@ export default function AnalyticsPage() {
             })}
 
             {Object.keys(emailSources).length === 0 && (
-              <div className="py-8 text-center text-xs text-slate-500">No email sources data available.</div>
+              <div className="py-6 text-center text-xs text-slate-400">No email sources data available.</div>
             )}
           </div>
         </div>
 
         {/* Niche Breakdown */}
-        <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
-          <h3 className="text-sm font-semibold text-white pb-2 border-b border-border">
-            Creators by Niche Distribution
+        <div className="rounded-lg border border-border bg-white p-4 space-y-3 shadow-xs">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 pb-2 border-b border-border">
+            Niche Distribution
           </h3>
 
-          <div className="space-y-3 pt-1">
+          <div className="space-y-2 pt-1">
             {Object.entries(niches).map(([nicheName, count]) => {
               const pct = Math.round((count / maxNicheVal) * 100);
               return (
-                <div key={nicheName} className="space-y-1">
+                <div key={nicheName} className="space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-slate-300">{nicheName}</span>
-                    <span className="font-mono font-bold text-white">{count}</span>
+                    <span className="text-slate-600">{nicheName}</span>
+                    <span className="font-mono font-semibold text-slate-900">{count}</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-background overflow-hidden">
+                  <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-primary to-accent"
+                      className="h-full bg-slate-800 rounded-full"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
                 </div>
               );
             })}
-
-            {Object.keys(niches).length === 0 && (
-              <div className="py-8 text-center text-xs text-slate-500">No niche data collected yet.</div>
-            )}
           </div>
         </div>
 
         {/* Follower Bracket Breakdown */}
-        <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
-          <h3 className="text-sm font-semibold text-white pb-2 border-b border-border">
-            Micro-Influencer Follower Brackets
+        <div className="rounded-lg border border-border bg-white p-4 space-y-3 shadow-xs">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 pb-2 border-b border-border">
+            Follower Brackets
           </h3>
 
-          <div className="space-y-3 pt-1">
+          <div className="space-y-2 pt-1">
             {Object.entries(followerBrackets).map(([bracket, count]) => {
               const pct = Math.round((count / maxFollowerVal) * 100);
               return (
-                <div key={bracket} className="space-y-1">
+                <div key={bracket} className="space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-slate-300">{bracket} Subscribers</span>
-                    <span className="font-mono font-bold text-white">{count}</span>
+                    <span className="text-slate-600">{bracket}</span>
+                    <span className="font-mono font-semibold text-slate-900">{count}</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-background overflow-hidden">
+                  <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className="h-full bg-emerald-500"
+                      className="h-full bg-slate-800 rounded-full"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

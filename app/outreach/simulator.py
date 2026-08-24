@@ -33,11 +33,6 @@ class OutreachSimulator:
         simulated_records: List[OutreachModel] = []
 
         for inf in influencers:
-            # Check email availability
-            if not inf.email or inf.email == "Not Found":
-                missing_email_count += 1
-                continue
-
             # Check if personalized message exists
             message = (
                 session.query(MessageModel)
@@ -47,6 +42,25 @@ class OutreachSimulator:
             )
             if not message:
                 missing_message_count += 1
+                logger.warning(f"Creator '{inf.name}' has no personalized message generated yet.")
+
+            # If email is not found, record outreach as SKIPPED_NO_EMAIL (DM ready for manual send)
+            if not inf.email or inf.email == "Not Found":
+                missing_email_count += 1
+                if not self.tracker.is_already_contacted(session, inf.id):
+                    record = self.tracker.record_outreach(
+                        session=session,
+                        influencer_id=inf.id,
+                        email="Not Found",
+                        message_id=message.id if message else None,
+                        status="SKIPPED_NO_EMAIL",
+                        send_mode="manual_dm",
+                        error_message="No public email found. Instagram DM marked READY_FOR_MANUAL_SEND.",
+                    )
+                    simulated_records.append(record)
+                    logger.info(
+                        f"[Simulation] Creator '{inf.name}' (ID: {inf.id}) has no email -> Recorded as SKIPPED_NO_EMAIL (DM: READY_FOR_MANUAL_SEND)"
+                    )
                 continue
 
             eligible_count += 1
@@ -64,7 +78,7 @@ class OutreachSimulator:
                 session=session,
                 influencer_id=inf.id,
                 email=inf.email,
-                message_id=message.id,
+                message_id=message.id if message else None,
                 status="SIMULATED",
                 send_mode="simulation",
             )

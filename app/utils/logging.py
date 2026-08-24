@@ -6,6 +6,18 @@ from typing import Optional
 from rich.console import Console
 from rich.logging import RichHandler
 
+# Ensure UTF-8 output encoding across Windows terminals
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 console = Console(legacy_windows=False)
 
 _loggers: dict[str, logging.Logger] = {}

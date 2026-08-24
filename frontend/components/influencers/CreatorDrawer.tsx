@@ -4,22 +4,18 @@ import React, { useState, useEffect } from "react";
 import {
   X,
   ExternalLink,
-  Mail,
   Copy,
   Check,
-  Sparkles,
-  TrendingUp,
+  RefreshCw,
   Eye,
   ThumbsUp,
   MessageCircle,
   Video,
-  ShieldCheck,
   Globe,
-  Tag,
-  Zap,
+  Sparkles,
 } from "lucide-react";
 import { Influencer } from "@/lib/types";
-import { getInfluencerDetail } from "@/lib/api";
+import { getInfluencerDetail, regenerateMessage } from "@/lib/api";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { formatNumber } from "@/lib/utils";
 
@@ -32,7 +28,13 @@ interface CreatorDrawerProps {
 export function CreatorDrawer({ influencerId, onClose, onOpenMessageReview }: CreatorDrawerProps) {
   const [data, setData] = useState<Influencer | null>(null);
   const [loading, setLoading] = useState(false);
-  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [generatingPitch, setGeneratingPitch] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Editable fields for pitch
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [instagramDm, setInstagramDm] = useState("");
 
   useEffect(() => {
     if (!influencerId) {
@@ -41,33 +43,78 @@ export function CreatorDrawer({ influencerId, onClose, onOpenMessageReview }: Cr
     }
     setLoading(true);
     getInfluencerDetail(influencerId)
-      .then((res) => setData(res))
+      .then((res) => {
+        setData(res);
+        if (res.message) {
+          setEmailSubject(res.message.email_subject);
+          setEmailBody(res.message.email_body);
+          setInstagramDm(res.message.instagram_dm);
+        }
+      })
       .catch((err) => console.error("Error loading influencer detail:", err))
       .finally(() => setLoading(false));
   }, [influencerId]);
 
   if (!influencerId) return null;
 
-  const handleCopyEmail = (email: string) => {
-    navigator.clipboard.writeText(email);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
+  const handleGeneratePitch = async () => {
+    if (!data) return;
+    setGeneratingPitch(true);
+    try {
+      const res = await regenerateMessage(data.id);
+      setEmailSubject(res.email_subject);
+      setEmailBody(res.email_body);
+      setInstagramDm(res.instagram_dm);
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          message: {
+            id: res.message_id || 1,
+            influencer_id: prev.id,
+            email_subject: res.email_subject,
+            email_body: res.email_body,
+            instagram_dm: res.instagram_dm,
+            collaboration_angle: res.collaboration_angle || "Technical Demonstration",
+            personalization_signals: res.personalization_signals || [],
+            model: res.model || "groq/llama-3.3-70b-versatile",
+            validation_status: res.validation_status || "VALID",
+            validation_errors: [],
+            email_word_count: res.email_word_count || res.email_body.split(/\s+/).filter(Boolean).length,
+            dm_word_count: res.dm_word_count || res.instagram_dm.split(/\s+/).filter(Boolean).length,
+          },
+        };
+      });
+    } catch (err: any) {
+      alert(`Error generating AI pitch: ${err.message || err}`);
+    } finally {
+      setGeneratingPitch(false);
+    }
+  };
+
+  const emailWordCount = emailBody.trim().split(/\s+/).filter(Boolean).length;
+  const dmWordCount = instagramDm.trim().split(/\s+/).filter(Boolean).length;
+
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in">
-      <div className="relative flex h-full w-full max-w-2xl flex-col bg-surface border-l border-border shadow-2xl overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/30 backdrop-blur-[2px] transition-opacity">
+      <div className="relative flex h-full w-full max-w-xl flex-col bg-white border-l border-border shadow-drawer overflow-y-auto">
         {/* Drawer Header */}
-        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface/95 px-6 py-4 backdrop-blur">
+        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-white px-5 py-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Creator CRM Record
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Creator Record
             </span>
             {data && <StatusBadge status={data.status} />}
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-slate-400 hover:bg-surface-hover hover:text-white transition"
+            className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
           >
             <X className="h-4 w-4" />
           </button>
@@ -76,292 +123,368 @@ export function CreatorDrawer({ influencerId, onClose, onOpenMessageReview }: Cr
         {/* Content Body */}
         {loading ? (
           <div className="flex flex-1 items-center justify-center p-12">
-            <div className="flex flex-col items-center gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <span className="text-xs text-slate-400">Loading creator intelligence...</span>
+            <div className="flex flex-col items-center gap-2 text-slate-400">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+              <span className="text-xs font-medium">Loading record...</span>
             </div>
           </div>
         ) : data ? (
-          <div className="space-y-6 p-6">
-            {/* Creator Profile Header */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/30 to-accent/30 text-lg font-bold text-white border border-primary/40 shadow-inner">
-                  {data.name.substring(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">{data.name}</h2>
-                  <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
-                    <span>YouTube Creator</span>
-                    <span>•</span>
-                    <span className="text-primary font-medium">{data.niche}</span>
+          <div className="divide-y divide-border">
+            {/* 1. Creator Header Profile */}
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-slate-100 text-sm font-bold text-slate-800 border border-slate-200">
+                    {data.name.substring(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900 leading-snug">{data.name}</h2>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
+                      <span>YouTube Creator</span>
+                      <span>·</span>
+                      <span className="font-medium text-slate-700">{data.niche}</span>
+                    </div>
                   </div>
                 </div>
+
+                <a
+                  href={data.profile_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 rounded border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition shrink-0"
+                >
+                  <span>Channel</span>
+                  <ExternalLink className="h-3 w-3 text-slate-400" />
+                </a>
               </div>
 
-              <a
-                href={data.profile_url}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-slate-300 hover:border-primary hover:text-white transition"
-              >
-                <span>YouTube</span>
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            </div>
-
-            {/* Quick Metrics Grid */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="rounded-xl border border-border bg-background p-3">
-                <span className="text-[10px] font-semibold uppercase text-slate-400">Subscribers</span>
-                <div className="text-base font-bold text-white mt-1">{formatNumber(data.followers)}</div>
-              </div>
-              <div className="rounded-xl border border-border bg-background p-3">
-                <span className="text-[10px] font-semibold uppercase text-slate-400">Avg Views</span>
-                <div className="text-base font-bold text-white mt-1">
-                  {data.avg_views ? formatNumber(data.avg_views) : "N/A"}
+              {/* 2. Structured Metrics Strip (Attio / Linear style) */}
+              <div className="grid grid-cols-4 divide-x divide-border rounded border border-border bg-slate-50/60 mt-4 text-center">
+                <div className="py-2.5 px-2">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Subscribers</span>
+                  <span className="text-sm font-semibold text-slate-900 mt-0.5 block">{formatNumber(data.followers)}</span>
+                </div>
+                <div className="py-2.5 px-2">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Avg Views</span>
+                  <span className="text-sm font-semibold text-slate-900 mt-0.5 block">{formatNumber(data.avg_views)}</span>
+                </div>
+                <div className="py-2.5 px-2">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Engagement</span>
+                  <span className="text-sm font-semibold text-slate-900 mt-0.5 block">
+                    {data.engagement_rate !== null ? `${data.engagement_rate}%` : "N/A"}
+                  </span>
+                </div>
+                <div className="py-2.5 px-2">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block">Fit Score</span>
+                  <span className="text-sm font-semibold text-slate-900 mt-0.5 block">{data.brand_fit_score}</span>
                 </div>
               </div>
-              <div className="rounded-xl border border-border bg-background p-3">
-                <span className="text-[10px] font-semibold uppercase text-slate-400">Engagement</span>
-                <div className="text-base font-bold text-emerald-400 mt-1">
-                  {data.engagement_rate !== null ? `${data.engagement_rate}%` : "Not Available"}
-                </div>
-              </div>
-              <div className="rounded-xl border border-border bg-background p-3">
-                <span className="text-[10px] font-semibold uppercase text-slate-400">Brand Fit</span>
-                <div className="text-base font-bold text-primary mt-1">{data.brand_fit_score} / 100</div>
-              </div>
             </div>
 
-            {/* Contact & Profile Information */}
-            <div className="rounded-xl border border-border bg-surface-raised p-4 space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+            {/* 3. Contact & Verification */}
+            <div className="p-5 space-y-3">
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 Contact & Verification
               </h3>
 
-              <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
                 <div>
-                  <span className="text-slate-400">Contact Email:</span>
-                  <div className="flex items-center gap-2 mt-1">
+                  <span className="text-slate-400 block text-[11px]">Contact Email</span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
                     {data.email !== "Not Found" ? (
                       <>
-                        <span className="font-mono text-cyan-400 font-semibold">{data.email}</span>
+                        <span className="font-mono text-slate-900 font-medium select-all">{data.email}</span>
                         <button
-                          onClick={() => handleCopyEmail(data.email)}
-                          className="text-slate-400 hover:text-white transition"
+                          onClick={() => handleCopy(data.email, "email")}
+                          className="text-slate-400 hover:text-slate-700 transition"
                           title="Copy email"
                         >
-                          {copiedEmail ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                          {copiedField === "email" ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
                         </button>
                       </>
                     ) : (
-                      <span className="text-slate-500 italic">Not Found (Zero Guessing Policy)</span>
+                      <span className="text-slate-400 italic">Not Found (Zero Guessing Policy)</span>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-400">Email Source & Status:</span>
-                  <div className="font-medium text-slate-300 mt-1 font-mono text-[11px]">
-                    <code>{data.email_source}</code> &bull; <span className="text-emerald-400">{data.email_status || (data.email !== "Not Found" ? "FOUND" : "NOT_FOUND")}</span>
+                  <span className="text-slate-400 block text-[11px]">Email Source & Status</span>
+                  <div className="text-slate-700 font-mono text-[11px] mt-0.5">
+                    {data.email_source} · <span className="text-slate-900 font-medium">{data.email_status || (data.email !== "Not Found" ? "Found" : "Not Found")}</span>
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-400">Primary Niche:</span>
-                  <div className="font-medium text-white mt-1">
+                  <span className="text-slate-400 block text-[11px]">Primary Niche</span>
+                  <div className="text-slate-800 font-medium mt-0.5">
                     {data.niche} ({data.technology_relevance_score ? `${data.technology_relevance_score}/100` : `${Math.round((data.niche_confidence || 0.8) * 100)}% match`})
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-400">Creator Website / Links:</span>
-                  <div className="font-medium text-slate-300 mt-1 truncate">
+                  <span className="text-slate-400 block text-[11px]">Creator Links</span>
+                  <div className="text-slate-700 mt-0.5 truncate">
                     {data.website && data.website !== "Not Available" ? (
-                      <a href={data.website} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                        <span>{data.website}</span>
-                        <ExternalLink className="h-3 w-3" />
+                      <a href={data.website} target="_blank" rel="noreferrer" className="text-slate-900 hover:underline flex items-center gap-1">
+                        <span className="truncate">{data.website}</span>
+                        <ExternalLink className="h-2.5 w-2.5 text-slate-400 shrink-0" />
                       </a>
                     ) : (
-                      <span className="text-slate-500">Not Available</span>
+                      <span className="text-slate-400">None detected</span>
                     )}
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* 4. Technology Relevance Audit */}
+            <div className="p-5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  Technology Relevance Audit
+                </h3>
+                {data.technology_video_ratio !== undefined && (
+                  <span className="text-[11px] font-mono text-slate-500 font-medium">
+                    Evidence: {(data.technology_video_ratio * 100).toFixed(0)}% verified tech uploads
+                  </span>
+                )}
+              </div>
 
               {data.technology_relevance_reason && (
-                <div className="pt-2 border-t border-border/50 text-[11px] text-slate-300">
-                  <span className="text-slate-400 block mb-0.5 font-semibold">Technology Relevance Audit:</span>
-                  <p className="italic text-slate-300">{data.technology_relevance_reason}</p>
-                </div>
+                <p className="text-xs text-slate-600 bg-slate-50 border border-border p-2.5 rounded text-left leading-relaxed">
+                  {data.technology_relevance_reason}
+                </p>
               )}
 
-              {/* Content Themes */}
-              <div className="pt-2 border-t border-border/50">
-                <span className="text-[11px] text-slate-400 block mb-1.5">Detected Content Themes:</span>
+              {/* Detected Topics Tags */}
+              <div className="pt-1">
+                <span className="text-[10px] text-slate-400 font-medium block mb-1.5">Detected Topics:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {data.content_themes && data.content_themes.length > 0 ? (
-                    data.content_themes.map((t, idx) => (
+                    data.content_themes.map((theme, i) => (
                       <span
-                        key={idx}
-                        className="rounded-md border border-border bg-background px-2 py-0.5 text-[11px] text-slate-300"
+                        key={i}
+                        className="rounded border border-border bg-slate-50 px-2 py-0.5 text-[11px] text-slate-700"
                       >
-                        {t}
+                        {theme}
                       </span>
                     ))
                   ) : (
-                    <span className="text-xs text-slate-500">None detected</span>
+                    <span className="text-xs text-slate-400">None detected</span>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* 100-Point Brand Fit Score Breakdown */}
-            <div className="rounded-xl border border-border bg-background p-4 space-y-3">
+            {/* 5. 100-Point Brand Fit Rubric */}
+            <div className="p-5 space-y-2.5">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                  100-Point Brand-Fit Rubric Breakdown
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  100-Point Fit Score Breakdown
                 </h3>
-                <span className="text-xs font-bold text-primary">{data.brand_fit_score} / 100</span>
+                <span className="text-xs font-semibold text-slate-900 font-mono">{data.brand_fit_score} / 100</span>
               </div>
 
-              <div className="grid grid-cols-5 gap-2 text-center text-xs">
-                <div className="rounded-lg border border-border bg-surface p-2">
-                  <span className="text-[10px] text-slate-400 block">Followers</span>
-                  <span className="font-bold text-white mt-0.5 block">{data.score_breakdown?.follower_fit ?? data.score_breakdown?.follower_fit_score ?? 0}/25</span>
+              <div className="grid grid-cols-5 divide-x divide-border rounded border border-border bg-slate-50/60 text-center py-2">
+                <div className="px-1">
+                  <span className="text-[10px] text-slate-400 block font-medium">Followers</span>
+                  <span className="text-xs font-semibold text-slate-800 mt-0.5 block">{data.score_breakdown?.follower_fit ?? data.score_breakdown?.follower_fit_score ?? 0}/25</span>
                 </div>
-                <div className="rounded-lg border border-border bg-surface p-2">
-                  <span className="text-[10px] text-slate-400 block">Relevance</span>
-                  <span className="font-bold text-white mt-0.5 block">{(data.score_breakdown?.tech_relevance ?? data.score_breakdown?.tech_relevance_score ?? 0).toFixed(1)}/25</span>
+                <div className="px-1">
+                  <span className="text-[10px] text-slate-400 block font-medium">Relevance</span>
+                  <span className="text-xs font-semibold text-slate-800 mt-0.5 block">{(data.score_breakdown?.tech_relevance ?? data.score_breakdown?.tech_relevance_score ?? 0).toFixed(1)}/25</span>
                 </div>
-                <div className="rounded-lg border border-border bg-surface p-2">
-                  <span className="text-[10px] text-slate-400 block">Content</span>
-                  <span className="font-bold text-white mt-0.5 block">{data.score_breakdown?.content_relevance ?? data.score_breakdown?.content_relevance_score ?? 0}/20</span>
+                <div className="px-1">
+                  <span className="text-[10px] text-slate-400 block font-medium">Content</span>
+                  <span className="text-xs font-semibold text-slate-800 mt-0.5 block">{data.score_breakdown?.content_relevance ?? data.score_breakdown?.content_relevance_score ?? 0}/20</span>
                 </div>
-                <div className="rounded-lg border border-border bg-surface p-2">
-                  <span className="text-[10px] text-slate-400 block">Engagement</span>
-                  <span className="font-bold text-white mt-0.5 block">{data.score_breakdown?.engagement_proxy ?? data.score_breakdown?.engagement_score ?? 0}/20</span>
+                <div className="px-1">
+                  <span className="text-[10px] text-slate-400 block font-medium">Engagement</span>
+                  <span className="text-xs font-semibold text-slate-800 mt-0.5 block">{data.score_breakdown?.engagement_proxy ?? data.score_breakdown?.engagement_score ?? 0}/20</span>
                 </div>
-                <div className="rounded-lg border border-border bg-surface p-2">
-                  <span className="text-[10px] text-slate-400 block">Geography</span>
-                  <span className="font-bold text-white mt-0.5 block">{data.score_breakdown?.geo_relevance ?? data.score_breakdown?.geographic_score ?? 0}/10</span>
+                <div className="px-1">
+                  <span className="text-[10px] text-slate-400 block font-medium">Geography</span>
+                  <span className="text-xs font-semibold text-slate-800 mt-0.5 block">{data.score_breakdown?.geo_relevance ?? data.score_breakdown?.geographic_score ?? 0}/10</span>
                 </div>
               </div>
-
-              {data.technology_video_ratio !== undefined && (
-                <div className="text-[11px] text-slate-400 pt-1">
-                  <strong>Tech Video Evidence Ratio:</strong> {(data.technology_video_ratio * 100).toFixed(0)}% verified technology uploads
-                </div>
-              )}
-
-              {data.filter_reasons && data.filter_reasons.length > 0 && (
-                <div className="text-[11px] text-slate-400 pt-1">
-                  <strong>Audit Notes:</strong> {data.filter_reasons.join(" | ")}
-                </div>
-              )}
             </div>
 
-            {/* AI Outreach Intelligence */}
-            <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+            {/* 6. AI Personalization Outreach Recommendation (Editable Surface) */}
+            <div className="p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-                    AI Outreach Intelligence (Groq)
+                  <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    AI Personalization
                   </h3>
+                  {data.message && (
+                    <StatusBadge status={data.message.validation_status} />
+                  )}
                 </div>
-                {data.message && (
+
+                <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => {
-                      onClose();
-                      onOpenMessageReview?.(data.id);
-                    }}
-                    className="text-xs text-primary hover:underline font-semibold"
+                    onClick={handleGeneratePitch}
+                    disabled={generatingPitch}
+                    className="flex items-center gap-1 rounded border border-border bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
                   >
-                    Open Full Pitch Editor →
+                    <RefreshCw className={`h-3 w-3 ${generatingPitch ? "animate-spin" : ""}`} />
+                    <span>{generatingPitch ? "Generating..." : data.message ? "Regenerate" : "Generate"}</span>
                   </button>
-                )}
+                </div>
               </div>
 
               {data.message ? (
-                <div className="space-y-2 text-xs">
+                <div className="space-y-3 text-xs">
+                  {/* Email Subject */}
                   <div>
-                    <span className="text-slate-400">Collaboration Angle:</span>
-                    <span className="font-semibold text-white ml-2">{data.message.collaboration_angle}</span>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-medium text-slate-500">Email Subject</span>
+                      <button
+                        onClick={() => handleCopy(emailSubject, "subject")}
+                        className="text-[10px] text-slate-400 hover:text-slate-700 flex items-center gap-1"
+                      >
+                        {copiedField === "subject" ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                      className="w-full rounded border border-border bg-slate-50/50 px-2.5 py-1.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-slate-400 focus:outline-none"
+                    />
                   </div>
+
+                  {/* Email Body */}
                   <div>
-                    <span className="text-slate-400">Referenced Video Signals:</span>
-                    <ul className="list-disc list-inside text-slate-300 mt-1 space-y-0.5">
-                      {data.message.personalization_signals.map((sig, i) => (
-                        <li key={i}>{sig}</li>
-                      ))}
-                    </ul>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-medium text-slate-500">Email Body Pitch</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-mono ${emailWordCount >= 60 && emailWordCount <= 90 ? "text-emerald-700" : "text-amber-600"}`}>
+                          {emailWordCount} words (Target: 60–90w)
+                        </span>
+                        <button
+                          onClick={() => handleCopy(emailBody, "body")}
+                          className="text-[10px] text-slate-400 hover:text-slate-700 flex items-center gap-1"
+                        >
+                          {copiedField === "body" ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                          <span>Copy</span>
+                        </button>
+                      </div>
+                    </div>
+                    <textarea
+                      rows={5}
+                      value={emailBody}
+                      onChange={(e) => setEmailBody(e.target.value)}
+                      className="w-full rounded border border-border bg-slate-50/50 p-2.5 text-xs text-slate-800 leading-relaxed focus:bg-white focus:border-slate-400 focus:outline-none"
+                    />
                   </div>
-                  <div className="rounded-lg border border-border bg-surface p-3 mt-2">
-                    <span className="text-[10px] font-semibold uppercase text-slate-400 block mb-1">
-                      Email Pitch Preview ({data.message.email_word_count} words | Validated)
+
+                  {/* Instagram DM */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-medium text-slate-500">Instagram DM</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-mono ${dmWordCount >= 15 && dmWordCount <= 30 ? "text-emerald-700" : "text-amber-600"}`}>
+                          {dmWordCount} words (Target: 15–30w)
+                        </span>
+                        <button
+                          onClick={() => handleCopy(instagramDm, "dm")}
+                          className="text-[10px] text-slate-400 hover:text-slate-700 flex items-center gap-1"
+                        >
+                          {copiedField === "dm" ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                          <span>Copy</span>
+                        </button>
+                      </div>
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={instagramDm}
+                      onChange={(e) => setInstagramDm(e.target.value)}
+                      className="w-full rounded border border-border bg-slate-50/50 p-2 text-xs text-slate-800 leading-relaxed focus:bg-white focus:border-slate-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[11px] text-slate-400 truncate">
+                      Angle: <strong className="text-slate-700 font-medium">{data.message.collaboration_angle}</strong>
                     </span>
-                    <p className="text-slate-200 line-clamp-3 italic">"{data.message.email_body}"</p>
+                    {onOpenMessageReview && (
+                      <button
+                        onClick={() => onOpenMessageReview(data.id)}
+                        className="text-xs font-semibold text-slate-900 hover:underline shrink-0"
+                      >
+                        Open in AI Studio →
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (
-                <div className="text-xs text-slate-400">
-                  {data.status === "QUALIFIED"
-                    ? "Qualified creator. Personalized messaging is ready to be generated in the AI Messages workspace."
-                    : "Creator status is under review. Qualification required before AI outreach generation."}
+                <div className="rounded border border-dashed border-border bg-slate-50/50 p-4 text-center">
+                  <span className="text-xs text-slate-500 block mb-2">No pitch generated yet for this creator</span>
+                  <button
+                    onClick={handleGeneratePitch}
+                    disabled={generatingPitch}
+                    className="inline-flex items-center gap-1.5 rounded bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-50 transition"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${generatingPitch ? "animate-spin" : ""}`} />
+                    <span>{generatingPitch ? "Generating..." : "Generate AI Pitch"}</span>
+                  </button>
                 </div>
               )}
             </div>
 
-            {/* Recent Public Videos */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                  <Video className="h-4 w-4 text-primary" />
-                  <span>Recent YouTube Uploads ({data.recent_videos?.length || 0})</span>
-                </h3>
-              </div>
+            {/* 7. Recent Public Uploads Analyzed */}
+            <div className="p-5 space-y-2.5">
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Recent Public Uploads ({data.recent_videos?.length || 0})
+              </h3>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {data.recent_videos && data.recent_videos.length > 0 ? (
-                  data.recent_videos.map((vid, idx) => (
-                    <a
-                      key={idx}
-                      href={vid.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group flex flex-col justify-between rounded-lg border border-border bg-background p-3 hover:border-primary/50 hover:bg-surface-raised transition"
+                  data.recent_videos.map((vid) => (
+                    <div
+                      key={vid.video_id}
+                      className="flex items-center justify-between gap-3 rounded border border-border bg-slate-50/40 px-3 py-2 text-xs hover:bg-slate-50 transition"
                     >
-                      <span className="text-xs font-semibold text-white group-hover:text-primary transition line-clamp-1">
-                        {vid.title}
-                      </span>
-                      <div className="flex items-center gap-4 mt-2 text-[11px] text-slate-400">
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {formatNumber(vid.views)} views
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <ThumbsUp className="h-3 w-3" />
-                          {formatNumber(vid.likes)} likes
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MessageCircle className="h-3 w-3" />
-                          {formatNumber(vid.comments)} comments
-                        </span>
-                        <span className="ml-auto text-[10px] text-slate-500">{vid.published_at.substring(0, 10)}</span>
+                      <div className="min-w-0 flex-1">
+                        <a
+                          href={vid.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-slate-900 hover:underline truncate block"
+                        >
+                          {vid.title}
+                        </a>
+                        <div className="flex items-center gap-3 mt-0.5 text-[11px] text-slate-400 font-mono">
+                          <span>{formatNumber(vid.views)} views</span>
+                          <span>{formatNumber(vid.likes)} likes</span>
+                          <span>{vid.published_at?.substring(0, 10)}</span>
+                        </div>
                       </div>
-                    </a>
+
+                      <a
+                        href={vid.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-400 hover:text-slate-700 shrink-0"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
                   ))
                 ) : (
-                  <div className="rounded-lg border border-border bg-background p-4 text-center text-xs text-slate-500">
-                    No recent public video data cached.
+                  <div className="py-4 text-center text-xs text-slate-400">
+                    No recent video data loaded.
                   </div>
                 )}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="p-8 text-center text-slate-400 text-xs">No creator data found.</div>
+        )}
       </div>
     </div>
   );
